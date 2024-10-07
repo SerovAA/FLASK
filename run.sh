@@ -1,11 +1,14 @@
 #!/bin/bash
 
-set -m
+set -e
 
-/usr/lib/postgresql/15/bin/postgres \
-    -D /var/lib/postgresql/15/main \
-    -c config_file=/etc/postgresql/15/main/postgresql.conf &
+service postgresql start
 
-sleep 5 && psql -a -f init.sql && make run
+until pg_isready; do
+  echo "Waiting for postgres..."
+  sleep 2
+done
 
-fg %1
+sudo -u postgres psql -d example_db -f init.sql
+
+make run
